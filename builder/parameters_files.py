@@ -26,6 +26,10 @@ def create_velocity_file(
     ----------------------------------------------------------------------------
     model_name: str
         Name of the model
+    vel_array: np.array
+        Array containing the velocity
+    phi_array: np.array
+        Array containing the velocity angles
     x_size: int or float
         Horizontal axis length in meters.
         Must be a positive and non-zero value.
