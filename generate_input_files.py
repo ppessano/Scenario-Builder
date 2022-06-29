@@ -30,8 +30,10 @@ Lx, Ly, x, y, X, Y = create_horizontal_grid_2D(x_size, y_size, az_width, Nx, Ny)
 sz_width = 5.0 * 1e3  # Main shear zones mean width (m)
 sub_width = 5.0 * 1e3  # Subsidiary faults mean width (m)
 
-sz_coords = pd.read_csv("shear_zones_coordinates_transform.csv")
-tr_coords = pd.read_csv("terranes_coordinates_transform.csv")
+sz_coords = pd.read_csv(
+    "coordinate_files/shear_zones_coordinates_transform.csv", sep=";"
+)
+tr_coords = pd.read_csv("coordinate_files/terranes_coordinates_transform.csv")
 
 interfaces = create_interfaces_2D(
     sz_coords, sz_width, sub_width, az_width, x, x_size, Nx, Lx, Ly, tr_coords
