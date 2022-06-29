@@ -1,8 +1,197 @@
+"""This module contains the functions to generate the plots"""
 import os
 import imageio
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+
+def plot_map_layout(
+    model_name: str,
+    x: np.array,
+    Lx: int or float,
+    Ly: int or float,
+    az_width: int or float,
+    interfaces: dict,
+):
+    """
+    Plot the layout of the model based on the interfaces file and its coordinates
+
+    Parameters:
+    -----------
+    model_name: str
+        Name of the model
+    x: np.array
+        1D coordinate array along the x-axis
+    Lx: int or float
+        Lenght of the x direction (m)
+    Ly: int or float
+        Lenght of the y direction (m)
+    az_width: float
+        Width of the accommodation zone in meters
+    interfaces: dict
+        Dictionary containing the coordinates of each interface
+    """
+    plt.figure(figsize=(12, 8))
+
+    # Model total area outline:
+    plt.plot(
+        [0, Lx / 1000, Lx / 1000, 0, 0], [0, 0, -Ly / 1000, -Ly / 1000, 0], "k", lw=4
+    )
+
+    # Accommodation zone area:
+    plt.fill(
+        [0, Lx / 1000, Lx / 1000, 0, 0],
+        [0, 0, -Ly / 1000, -Ly / 1000, 0],
+        "aliceblue",
+        [
+            az_width / 1000,
+            (Lx - az_width) / 1000,
+            (Lx - az_width) / 1000,
+            az_width / 1000,
+            az_width / 1000,
+        ],
+        [
+            -az_width / 1000,
+            -az_width / 1000,
+            -(Ly - az_width) / 1000,
+            -(Ly - az_width) / 1000,
+            -az_width / 1000,
+        ],
+        "white",
+    )
+
+    for label, layer in interfaces.items():
+        if label.startswith("Accommodation"):
+            plt.plot(x / 1000, layer / 1000, "black", lw=4.0)
+        elif label.startswith("Subsidiary") and label.endswith("Bottom"):
+            plt.plot(x / 1000, layer / 1000, "k", alpha=0.6, lw=1.5)
+        elif (
+            not label.startswith("Subsidiary")
+            and not label.startswith("Cariris")
+            and label.endswith("Bottom")
+        ):
+            plt.plot(x / 1000, layer / 1000, lw=4.0, label=f"{label}"[:-6], alpha=0.7)
+
+    cs_color = "darkseagreen"
+    cv_color = "khaki"
+
+    # Cachoeirinha-Seridó
+    plt.fill_between(
+        x / 1000,
+        interfaces["Cachoeirinha-Seridó Bottom 1"] / 1000,
+        interfaces["Cachoeirinha-Seridó Top 1"] / 1000,
+        color=cs_color,
+        label="Neoproterozoic supracrustals",
+    )
+    plt.fill_between(
+        x / 1000,
+        interfaces["Cachoeirinha-Seridó Bottom 2"] / 1000,
+        interfaces["Cachoeirinha-Seridó Top 2"] / 1000,
+        color=cs_color,
+    )
+    plt.fill_between(
+        x / 1000,
+        interfaces["Cachoeirinha-Seridó Bottom 3"] / 1000,
+        interfaces["Cachoeirinha-Seridó Top 3a"] / 1000,
+        color=cs_color,
+    )
+    plt.fill_between(
+        x / 1000,
+        interfaces["Subsidiary 3 Bottom"] / 1000,
+        interfaces["Cachoeirinha-Seridó Top 3b"] / 1000,
+        color=cs_color,
+    )
+
+    # Cariris-Velhos:
+    plt.fill_between(
+        x / 1000,
+        interfaces["Cachoeirinha-Seridó Top 1"] / 1000,
+        interfaces["Pernambuco Bottom"] / 1000,
+        color=cv_color,
+        label="Tonian supracrustals",
+    )
+    plt.fill_between(
+        x / 1000,
+        interfaces["Subsidiary 2 Bottom"] / 1000,
+        interfaces["Cachoeirinha-Seridó Bottom 2"] / 1000,
+        color=cv_color,
+    )
+    plt.fill_between(
+        x / 1000,
+        interfaces["Cariris-Velhos Bottom"] / 1000,
+        interfaces["Cachoeirinha-Seridó Bottom 2"] / 1000,
+        color=cv_color,
+    )
+
+    # Annotations:
+    plt.annotate(
+        "N",
+        xy=(680, -120),
+        xytext=(680, -180),
+        arrowprops=dict(facecolor="black", width=5, headwidth=15),
+        ha="center",
+        va="center",
+        fontsize=20,
+        xycoords="data",
+    )
+    plt.annotate(
+        "Accommodation Zone",
+        xy=(50, -300),
+        xytext=(50, -400),
+        xycoords="data",
+        rotation="vertical",
+        fontsize=13,
+        fontstyle="italic",
+    )
+    plt.annotate(
+        "Cachoeirinha",
+        xy=(290, -360),
+        xytext=(290, -360),
+        xycoords="data",
+        rotation=28,
+        fontsize=11.5,
+        fontstyle="normal",
+    )
+    plt.annotate(
+        "Seridó",
+        xy=(570, -220),
+        xytext=(570, -220),
+        xycoords="data",
+        rotation=60,
+        fontsize=11.5,
+        fontstyle="normal",
+    )
+    plt.annotate(
+        "Cariris-Velhos",
+        xy=(350, -380),
+        xytext=(350, -380),
+        xycoords="data",
+        rotation=28,
+        fontsize=11.5,
+        fontstyle="normal",
+    )
+
+    plt.title(f"Structural Layout\n{model_name}", fontsize=14)
+    plt.ylabel("$y$ (km)", fontsize=14)
+    plt.xlabel("$x$ (km)", fontsize=14)
+    plt.ylim(-Ly / 1000, 0)
+    plt.xlim(0, Lx / 1000)
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    legend = plt.legend(
+        reversed(handles),
+        reversed(labels),
+        fontsize=10,
+        ncol=4,
+        framealpha=1,
+        loc="lower right",
+    )
+    legend.get_title().set_fontsize("11")
+    legend.get_frame().set_edgecolor("k")
+
+    plt.savefig(f"interfaces_{model_name}", bbox_inches="tight", dpi=200)
+    plt.show()
 
 
 def shadow_plot(
@@ -132,7 +321,7 @@ def shadow_plot(
             strain_log[::-1, :],
             extent=[0, Lx / 1e3, -Ly / 1e3, 0],
             zorder=100,
-            alpha=0.25,
+            alpha=0.5,
             cmap=plt.get_cmap("Greys"),
             vmin=-0.5,
             vmax=0.9,
